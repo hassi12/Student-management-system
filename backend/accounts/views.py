@@ -1,3 +1,31 @@
-from django.shortcuts import render
+from django.contrib.auth import authenticate
+from rest_framework.authtoken.models import Token
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
 
-# Create your views here.
+
+@api_view(["POST"])
+def login_view(request):
+    username = request.data.get("username")
+    password = request.data.get("password")
+
+    user = authenticate(
+        username=username,
+        password=password
+    )
+
+    if user is None:
+        return Response(
+            {"error": "Invalid username or password"},
+            status=401
+        )
+
+    token, created = Token.objects.get_or_create(user=user)
+
+    return Response({
+        "message": "Login successful",
+        "token": token.key,
+        "user_id": user.id,
+        "username": user.username,
+        "role": user.role,
+    })

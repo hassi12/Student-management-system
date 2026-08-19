@@ -7,6 +7,14 @@ class AttendanceSession(models.Model):
         on_delete=models.CASCADE
     )
 
+    teacher = models.ForeignKey(
+    "accounts.User",
+    on_delete=models.CASCADE,
+    limit_choices_to={"role": "teacher"},
+    null=True,
+    blank=True
+    )
+
     date = models.DateField(auto_now_add=True)
 
     latitude = models.DecimalField(
