@@ -127,6 +127,64 @@ def mark_attendance(request):
         "course": session.course.code,
         "distance": round(distance, 2),
     })
+@api_view(["POST"])
+def face_mark_attendance(request):
+
+    roll_number = request.data.get("roll_number")
+
+    if not roll_number:
+        return Response(
+            {"error": "Roll number is required."},
+            status=400
+        )
+
+    # Find student
+    try:
+        student = StudentProfile.objects.get(
+            roll_number=roll_number
+        )
+    except StudentProfile.DoesNotExist:
+        return Response(
+            {"error": "Student not found."},
+            status=404
+        )
+
+    # Find active attendance session
+    session = (
+        AttendanceSession.objects
+        .filter(is_active=True)
+        .order_by("-id")
+        .first()
+    )
+
+    if not session:
+        return Response(
+            {"error": "No active attendance session."},
+            status=404
+        )
+
+    # Mark attendance
+    record, created = AttendanceRecord.objects.get_or_create(
+        session=session,
+        student=student,
+        defaults={
+            "is_present": True,
+        }
+    )
+
+    if not created:
+        return Response({
+            "success": False,
+            "message": "Attendance already marked.",
+            "student": roll_number,
+        }, status=400)
+
+    return Response({
+        "success": True,
+        "message": "Face attendance marked successfully.",
+        "student": roll_number,
+        "course": session.course.code,
+    })
 
 
 @api_view(["POST"])

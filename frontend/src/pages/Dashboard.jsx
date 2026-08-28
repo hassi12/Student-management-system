@@ -1,31 +1,63 @@
 function Dashboard() {
   return (
-    <>
-      <header className="topbar">
+    <div className="dashboard">
+
+      {/* PAGE TITLE */}
+      <div className="dashboard-heading">
         <div>
           <h1>Dashboard</h1>
-          <p>Welcome back, Ahmed Khan</p>
+          <p>Here's what's happening with your studies.</p>
         </div>
+      </div>
 
-        <div className="student">
-          <div className="avatar">AK</div>
-          <div>
-            <strong>Ahmed Khan</strong>
-            <small>BSCS-26-001</small>
-          </div>
-        </div>
-      </header>
 
-      <section className="cards">
-        <DashboardCard title="My Courses" value="5" />
-        <DashboardCard title="Pending Assignments" value="3" />
-        <DashboardCard title="Attendance" value="87%" />
-        <DashboardCard title="Unread Messages" value="4" />
+      {/* STATISTICS */}
+      <section className="dashboard-stats">
+
+        <DashboardCard
+          title="My Courses"
+          value="5"
+          subtitle="Active courses"
+        />
+
+        <DashboardCard
+          title="Pending Assignments"
+          value="3"
+          subtitle="Need your attention"
+        />
+
+        <DashboardCard
+          title="Attendance"
+          value="87%"
+          subtitle="Overall attendance"
+        />
+
+        <DashboardCard
+          title="Unread Messages"
+          value="4"
+          subtitle="New messages"
+        />
+
       </section>
 
-      <section className="content-grid">
-        <div className="panel">
-          <h2>My Courses</h2>
+
+      {/* MAIN DASHBOARD CONTENT */}
+      <section className="dashboard-grid">
+
+        {/* COURSES */}
+        <div className="dashboard-panel">
+
+          <div className="panel-header">
+            <div>
+              <h2>My Courses</h2>
+              <p>Your current courses</p>
+            </div>
+
+            <button className="view-all">
+              View All
+            </button>
+          </div>
+
 
           <Course
             name="Programming Fundamentals"
@@ -41,10 +73,24 @@ function Dashboard() {
             name="Database Systems"
             code="CS-201"
           />
+
         </div>
 
-        <div className="panel">
-          <h2>Upcoming Assignments</h2>
+
+        {/* ASSIGNMENTS */}
+        <div className="dashboard-panel">
+
+          <div className="panel-header">
+            <div>
+              <h2>Upcoming Assignments</h2>
+              <p>Assignments that need attention</p>
+            </div>
+
+            <button className="view-all">
+              View All
+            </button>
+          </div>
+
 
           <Assignment
             title="Python Functions"
@@ -57,45 +103,83 @@ function Dashboard() {
             course="Database Systems"
             due="Friday"
           />
-        </div>
-      </section>
-    </>
-  );
-}
 
-function DashboardCard({ title, value }) {
-  return (
-    <div className="dashboard-card">
-      <p>{title}</p>
-      <h2>{value}</h2>
+        </div>
+
+      </section>
+
     </div>
   );
 }
+
+
+/* =========================
+   DASHBOARD CARD
+========================= */
+
+function DashboardCard({ title, value, subtitle }) {
+  return (
+    <div className="dashboard-stat-card">
+
+      <p>{title}</p>
+
+      <h2>{value}</h2>
+
+      <span>{subtitle}</span>
+
+    </div>
+  );
+}
+
+
+/* =========================
+   COURSE
+========================= */
 
 function Course({ name, code }) {
   return (
-    <div className="course">
-      <div>
+    <div className="dashboard-course">
+
+      <div className="course-info">
+
         <strong>{name}</strong>
+
         <span>{code}</span>
+
       </div>
 
-      <button>Open</button>
+      <button className="course-button">
+        Open
+      </button>
+
     </div>
   );
 }
+
+
+/* =========================
+   ASSIGNMENT
+========================= */
 
 function Assignment({ title, course, due }) {
   return (
-    <div className="assignment">
-      <div>
+    <div className="dashboard-assignment">
+
+      <div className="assignment-info">
+
         <strong>{title}</strong>
+
         <span>{course}</span>
+
       </div>
 
-      <small>{due}</small>
+      <div className="assignment-due">
+        {due}
+      </div>
+
     </div>
   );
 }
+
 
 export default Dashboard;
