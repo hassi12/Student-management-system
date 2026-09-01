@@ -7,6 +7,7 @@ import Courses from "./pages/Courses";
 import Assignments from "./pages/Assignments";
 import Quizzes from "./pages/Quizzes";
 import Attendance from "./pages/Attendance";
+import Books from "./pages/Books";
 
 function App() {
   return (
@@ -22,6 +23,7 @@ function App() {
         <Route path="/assignments" element={<Assignments />} />
         <Route path="/quizzes" element={<Quizzes />} />
         <Route path="/attendance" element={<Attendance />} />
+        <Route path="/books" element={<Books />} />
       </Route>
 
     </Routes>

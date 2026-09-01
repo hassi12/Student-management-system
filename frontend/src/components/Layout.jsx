@@ -58,6 +58,11 @@ function Layout() {
             icon={<MapPin />}
             text="Attendance"
           />
+          <NavItem
+  to="/books"
+  icon={<BookOpen />}
+  text="Books"
+/>
 
         </nav>
 
