@@ -1,11 +1,12 @@
 from math import radians, sin, cos, sqrt, atan2
 
-from rest_framework.authtoken.models import Token
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from .models import AttendanceSession, AttendanceRecord
 from accounts.models import StudentProfile
+from courses.models import CourseOffering
 
 
 def calculate_distance(lat1, lon1, lat2, lon2):
@@ -31,31 +32,26 @@ def calculate_distance(lat1, lon1, lat2, lon2):
     return earth_radius * c
 
 
+# ---------------------------------------------------
+# STUDENT: MARK GPS ATTENDANCE
+# ---------------------------------------------------
+
 @api_view(["POST"])
+@permission_classes([IsAuthenticated])
 def mark_attendance(request):
 
-    # Get token from Authorization header
-    auth_header = request.headers.get("Authorization")
-
-    if not auth_header:
+    # Only students can mark their own attendance
+    if request.user.role != "student":
         return Response(
-            {"error": "Authentication token is required."},
-            status=401
-        )
-
-    try:
-        token_key = auth_header.split(" ")[1]
-        token = Token.objects.get(key=token_key)
-        user = token.user
-    except (IndexError, Token.DoesNotExist):
-        return Response(
-            {"error": "Invalid authentication token."},
-            status=401
+            {"error": "Only students can mark attendance."},
+            status=403
         )
 
     # Get student profile
     try:
-        student = StudentProfile.objects.get(user=user)
+        student = StudentProfile.objects.get(
+            user=request.user
+        )
     except StudentProfile.DoesNotExist:
         return Response(
             {"error": "Student profile not found."},
@@ -86,7 +82,7 @@ def mark_attendance(request):
             status=404
         )
 
-    # Calculate distance
+    # Calculate distance from classroom
     distance = calculate_distance(
         latitude,
         longitude,
@@ -96,12 +92,24 @@ def mark_attendance(request):
 
     # Check classroom radius
     if distance > session.allowed_radius:
-        return Response({
-            "success": False,
-            "message": "You are outside the allowed classroom area.",
-            "distance": round(distance, 2),
-            "allowed_radius": session.allowed_radius,
-        }, status=403)
+        return Response(
+            {
+                "success": False,
+                "message": "You are outside the allowed classroom area.",
+                "distance": round(distance, 2),
+                "allowed_radius": session.allowed_radius,
+            },
+            status=403
+        )
+
+    # Check student belongs to the same class section
+    if student.class_section != session.course_offering.class_section:
+        return Response(
+            {
+                "error": "You are not enrolled in this class section."
+            },
+            status=403
+        )
 
     # Create attendance record
     record, created = AttendanceRecord.objects.get_or_create(
@@ -115,20 +123,39 @@ def mark_attendance(request):
     )
 
     if not created:
-        return Response({
-            "success": False,
-            "message": "Attendance already marked.",
-        }, status=400)
+        return Response(
+            {
+                "success": False,
+                "message": "Attendance already marked."
+            },
+            status=400
+        )
 
-    return Response({
-        "success": True,
-        "message": "Attendance marked successfully.",
-        "student": student.roll_number,
-        "course": session.course.code,
-        "distance": round(distance, 2),
-    })
+    return Response(
+        {
+            "success": True,
+            "message": "Attendance marked successfully.",
+            "student": student.roll_number,
+            "course": session.course_offering.course.code,
+            "distance": round(distance, 2),
+        }
+    )
+
+
+# ---------------------------------------------------
+# FACE ATTENDANCE
+# ---------------------------------------------------
+
 @api_view(["POST"])
+@permission_classes([IsAuthenticated])
 def face_mark_attendance(request):
+
+    # Face attendance should not be available to students
+    if request.user.role not in ["teacher", "admin"]:
+        return Response(
+            {"error": "You are not allowed to use face attendance."},
+            status=403
+        )
 
     roll_number = request.data.get("roll_number")
 
@@ -163,6 +190,15 @@ def face_mark_attendance(request):
             status=404
         )
 
+    # Make sure student belongs to this class section
+    if student.class_section != session.course_offering.class_section:
+        return Response(
+            {
+                "error": "Student does not belong to this class section."
+            },
+            status=403
+        )
+
     # Mark attendance
     record, created = AttendanceRecord.objects.get_or_create(
         session=session,
@@ -173,55 +209,50 @@ def face_mark_attendance(request):
     )
 
     if not created:
-        return Response({
-            "success": False,
-            "message": "Attendance already marked.",
+        return Response(
+            {
+                "success": False,
+                "message": "Attendance already marked.",
+                "student": roll_number,
+            },
+            status=400
+        )
+
+    return Response(
+        {
+            "success": True,
+            "message": "Face attendance marked successfully.",
             "student": roll_number,
-        }, status=400)
+            "course": session.course_offering.course.code,
+        }
+    )
 
-    return Response({
-        "success": True,
-        "message": "Face attendance marked successfully.",
-        "student": roll_number,
-        "course": session.course.code,
-    })
 
+# ---------------------------------------------------
+# TEACHER: START ATTENDANCE
+# ---------------------------------------------------
 
 @api_view(["POST"])
+@permission_classes([IsAuthenticated])
 def start_attendance(request):
 
-    auth_header = request.headers.get("Authorization")
-
-    if not auth_header:
-        return Response(
-            {"error": "Authentication token is required."},
-            status=401
-        )
-
-    try:
-        token_key = auth_header.split(" ")[1]
-        token = Token.objects.get(key=token_key)
-        teacher = token.user
-    except (IndexError, Token.DoesNotExist):
-        return Response(
-            {"error": "Invalid authentication token."},
-            status=401
-        )
-
-    if teacher.role != "teacher":
+    # Only teachers can start attendance
+    if request.user.role != "teacher":
         return Response(
             {"error": "Only teachers can start attendance."},
             status=403
         )
 
-    course_id = request.data.get("course_id")
+    teacher = request.user
+
+    course_offering_id = request.data.get("course_offering_id")
     latitude = request.data.get("latitude")
     longitude = request.data.get("longitude")
     allowed_radius = request.data.get("allowed_radius", 20)
 
-    if not course_id:
+    if not course_offering_id:
         return Response(
-            {"error": "Course ID is required."},
+            {"error": "Course offering ID is required."},
             status=400
         )
 
@@ -231,12 +262,34 @@ def start_attendance(request):
             status=400
         )
 
+    # Find course offering
+    try:
+        course_offering = CourseOffering.objects.get(
+            id=course_offering_id
+        )
+    except CourseOffering.DoesNotExist:
+        return Response(
+            {"error": "Course offering not found."},
+            status=404
+        )
+
+    # Make sure this teacher teaches this course
+    if course_offering.teacher != teacher:
+        return Response(
+            {
+                "error": "You are not assigned to this course."
+            },
+            status=403
+        )
+
+    # Close any previous active session
     AttendanceSession.objects.filter(
         is_active=True
     ).update(is_active=False)
 
+    # Create new session
     session = AttendanceSession.objects.create(
-        course_id=course_id,
+        course_offering=course_offering,
         teacher=teacher,
         latitude=latitude,
         longitude=longitude,
@@ -244,13 +297,17 @@ def start_attendance(request):
         is_active=True
     )
 
-    return Response({
-        "success": True,
-        "message": "Attendance session started.",
-        "session_id": session.id,
-        "course": session.course.code,
-        "teacher": teacher.username,
-        "latitude": session.latitude,
-        "longitude": session.longitude,
-        "allowed_radius": session.allowed_radius
-    })
+    return Response(
+        {
+            "success": True,
+            "message": "Attendance session started.",
+            "session_id": session.id,
+            "course": course_offering.course.code,
+            "course_name": course_offering.course.name,
+            "teacher": teacher.username,
+            "class_section": course_offering.class_section.name,
+            "latitude": session.latitude,
+            "longitude": session.longitude,
+            "allowed_radius": session.allowed_radius,
+        }
+    )

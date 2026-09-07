@@ -2,9 +2,11 @@ from django.db import models
 
 
 class AttendanceSession(models.Model):
-    course = models.ForeignKey(
-        "courses.Course",
-        on_delete=models.CASCADE
+    course_offering = models.ForeignKey(
+    "courses.CourseOffering",
+    on_delete=models.CASCADE,
+    null=True,
+    blank=True
     )
 
     teacher = models.ForeignKey(
@@ -62,5 +64,5 @@ class AttendanceRecord(models.Model):
 
     is_present = models.BooleanField(default=False)
 
-    def __str__(self):
-        return f"{self.student.roll_number} - {self.session.course.code}"
+def __str__(self):
+    return f"{self.student.roll_number} - {self.session.course_offering.course.code}"

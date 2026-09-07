@@ -8,6 +8,7 @@ class Department(models.Model):
     def __str__(self):
         return f"{self.name} ({self.code})"
 
+
 class Batch(models.Model):
     name = models.CharField(max_length=50)
     start_year = models.PositiveIntegerField()
@@ -23,3 +24,30 @@ class Semester(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class ClassSection(models.Model):
+    name = models.CharField(max_length=50)
+
+    department = models.ForeignKey(
+        Department,
+        on_delete=models.PROTECT
+    )
+
+    batch = models.ForeignKey(
+        Batch,
+        on_delete=models.PROTECT
+    )
+
+    semester = models.ForeignKey(
+        Semester,
+        on_delete=models.PROTECT
+    )
+
+    def __str__(self):
+        return (
+            f"{self.department.code} - "
+            f"{self.batch.name} - "
+            f"{self.semester.name} - "
+            f"{self.name}"
+        )
