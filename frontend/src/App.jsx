@@ -1,4 +1,4 @@
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import Layout from "./components/Layout";
 
 import Login from "./pages/Login";
@@ -8,16 +8,44 @@ import Assignments from "./pages/Assignments";
 import Quizzes from "./pages/Quizzes";
 import Attendance from "./pages/Attendance";
 import Books from "./pages/Books";
+import ResetPassword from "./pages/ResetPassword";
+import ForgotPassword from "./pages/ForgotPassword";
+
+function ProtectedRoute({ children }) {
+  const token = localStorage.getItem("token");
+
+  if (!token) {
+    return <Navigate to="/login" replace />;
+  }
+
+  return children;
+}
 
 function App() {
   return (
     <Routes>
 
-      {/* Login page - without sidebar */}
+      {/* Login page */}
       <Route path="/login" element={<Login />} />
 
-      {/* Main application */}
-      <Route element={<Layout />}>
+      {/* Password reset page */}
+      <Route
+        path="/reset-password/:uid/:token/"
+        element={<ResetPassword />}
+      />
+      <Route
+  path="/forgot-password"
+  element={<ForgotPassword />}
+/>
+
+      {/* Protected application */}
+      <Route
+        element={
+          <ProtectedRoute>
+            <Layout />
+          </ProtectedRoute>
+        }
+      >
         <Route path="/" element={<Dashboard />} />
         <Route path="/courses" element={<Courses />} />
         <Route path="/assignments" element={<Assignments />} />

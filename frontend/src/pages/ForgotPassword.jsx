@@ -1,21 +1,22 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-function Login() {
+function ForgotPassword() {
   const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
 
-  const handleLogin = async (e) => {
+  const handleForgotPassword = async (e) => {
     e.preventDefault();
 
-    setMessage("Logging in...");
+    setLoading(true);
+    setMessage("");
 
     try {
       const response = await fetch(
-        "http://127.0.0.1:8000/api/accounts/login/",
+        "http://127.0.0.1:8000/api/accounts/forgot-password/",
         {
           method: "POST",
           headers: {
@@ -23,29 +24,21 @@ function Login() {
           },
           body: JSON.stringify({
             username: username,
-            password: password,
           }),
         }
       );
 
       const data = await response.json();
 
-      if (response.ok) {
-        localStorage.setItem("token", data.token);
-        localStorage.setItem("username", data.username);
-        localStorage.setItem("user_id", data.user_id);
-        localStorage.setItem("role", data.role);
-
-        setMessage("Login successful!");
-
-        navigate("/");
-      } else {
-        setMessage(data.error || "Invalid username or password.");
-      }
+      setMessage(
+        data.message || data.error || "Request completed."
+      );
     } catch (error) {
       console.error(error);
       setMessage("Could not connect to Django server.");
     }
+
+    setLoading(false);
   };
 
   return (
@@ -54,33 +47,37 @@ function Login() {
         <div>
           <div style={styles.logo}>BSCS</div>
 
-          <h1 style={styles.welcomeTitle}>
-            Welcome to BSCS Portal
+          <h1 style={styles.title}>
+            Reset your password
           </h1>
 
-          <p style={styles.welcomeText}>
-            A smart academic portal for students, teachers and
-            administration.
+          <p style={styles.description}>
+            Don't worry. Enter your username and we'll help you
+            get back into your academic portal.
           </p>
         </div>
 
-        <p style={styles.footerText}>
+        <p style={styles.footer}>
           Government Boys Post Graduate College
         </p>
       </div>
 
       <div style={styles.rightPanel}>
-        <div style={styles.loginCard}>
-          <div style={styles.iconCircle}>🎓</div>
+        <div style={styles.card}>
+          <div style={styles.icon}>🔐</div>
 
-          <h2 style={styles.title}>Student Login</h2>
+          <h2 style={styles.heading}>
+            Forgot Password?
+          </h2>
 
           <p style={styles.subtitle}>
-            Sign in to access your academic portal
+            Enter your username to request a password reset.
           </p>
 
-          <form onSubmit={handleLogin}>
-            <label style={styles.label}>Username</label>
+          <form onSubmit={handleForgotPassword}>
+            <label style={styles.label}>
+              Username
+            </label>
 
             <input
               type="text"
@@ -91,35 +88,31 @@ function Login() {
               required
             />
 
-            <label style={styles.label}>Password</label>
-
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Enter your password"
-              style={styles.input}
-              required
-            />
-
-            <button type="submit" style={styles.loginButton}>
-              Sign In
+            <button
+              type="submit"
+              disabled={loading}
+              style={{
+                ...styles.button,
+                opacity: loading ? 0.7 : 1,
+              }}
+            >
+              {loading ? "Please wait..." : "Request Reset"}
             </button>
           </form>
 
+          {message && (
+            <div style={styles.message}>
+              {message}
+            </div>
+          )}
+
           <button
             type="button"
-            onClick={() => navigate("/forgot-password")}
-            style={styles.forgotButton}
+            onClick={() => navigate("/login")}
+            style={styles.backButton}
           >
-            Forgot Password?
+            ← Back to Login
           </button>
-
-          {message && (
-            <p style={styles.message}>
-              {message}
-            </p>
-          )}
         </div>
       </div>
     </div>
@@ -160,20 +153,20 @@ const styles = {
     marginBottom: "50px",
   },
 
-  welcomeTitle: {
+  title: {
     fontSize: "42px",
     lineHeight: "1.15",
     marginBottom: "20px",
   },
 
-  welcomeText: {
+  description: {
     fontSize: "18px",
     lineHeight: "1.7",
     maxWidth: "500px",
     opacity: 0.9,
   },
 
-  footerText: {
+  footer: {
     fontSize: "14px",
     opacity: 0.8,
   },
@@ -186,7 +179,7 @@ const styles = {
     padding: "30px",
   },
 
-  loginCard: {
+  card: {
     width: "100%",
     maxWidth: "420px",
     background: "white",
@@ -196,7 +189,7 @@ const styles = {
     boxSizing: "border-box",
   },
 
-  iconCircle: {
+  icon: {
     width: "60px",
     height: "60px",
     borderRadius: "50%",
@@ -208,7 +201,7 @@ const styles = {
     marginBottom: "20px",
   },
 
-  title: {
+  heading: {
     fontSize: "30px",
     margin: "0 0 8px 0",
     color: "#202124",
@@ -216,6 +209,7 @@ const styles = {
 
   subtitle: {
     color: "#6b7280",
+    lineHeight: "1.6",
     marginBottom: "30px",
   },
 
@@ -238,7 +232,7 @@ const styles = {
     outline: "none",
   },
 
-  loginButton: {
+  button: {
     width: "100%",
     padding: "14px",
     border: "none",
@@ -248,10 +242,20 @@ const styles = {
     fontSize: "16px",
     fontWeight: "600",
     cursor: "pointer",
-    marginTop: "5px",
   },
 
-  forgotButton: {
+  message: {
+    marginTop: "18px",
+    padding: "12px",
+    borderRadius: "10px",
+    background: "#f5f7fa",
+    color: "#555",
+    fontSize: "14px",
+    lineHeight: "1.5",
+    textAlign: "center",
+  },
+
+  backButton: {
     width: "100%",
     marginTop: "18px",
     padding: "10px",
@@ -262,13 +266,6 @@ const styles = {
     fontWeight: "600",
     cursor: "pointer",
   },
-
-  message: {
-    textAlign: "center",
-    marginTop: "18px",
-    color: "#555",
-    fontSize: "14px",
-  },
 };
 
-export default Login;
+export default ForgotPassword;

@@ -1,4 +1,3 @@
-
 import {
   LayoutDashboard,
   BookOpen,
@@ -9,11 +8,23 @@ import {
   Mail,
   MessageSquare,
   ChevronDown,
+  LogOut,
 } from "lucide-react";
 
-import { NavLink, Outlet } from "react-router-dom";
+import { NavLink, Outlet, useNavigate } from "react-router-dom";
 
 function Layout() {
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("username");
+    localStorage.removeItem("user_id");
+    localStorage.removeItem("role");
+
+    navigate("/login");
+  };
+
   return (
     <div className="app">
 
@@ -58,16 +69,16 @@ function Layout() {
             icon={<MapPin />}
             text="Attendance"
           />
+
           <NavItem
-  to="/books"
-  icon={<BookOpen />}
-  text="Books"
-/>
+            to="/books"
+            icon={<BookOpen />}
+            text="Books"
+          />
 
         </nav>
 
       </aside>
-
 
       {/* MAIN AREA */}
       <main className="main">
@@ -76,15 +87,12 @@ function Layout() {
         <header className="top-header">
 
           <div className="welcome">
-
             <h1>Welcome, Hasnan Amin</h1>
 
             <p>
               Email: hasnan@bscsportal.edu.pk
             </p>
-
           </div>
-
 
           <div className="header-right">
 
@@ -98,28 +106,28 @@ function Layout() {
 
             <button className="header-icon notification">
               <Bell />
-
               <span>3</span>
-
             </button>
 
-
-            <div className="profile">
-
+            {/* PROFILE / LOGOUT */}
+            <button
+              className="profile"
+              onClick={handleLogout}
+              title="Logout"
+            >
               <div className="profile-circle">
                 H
               </div>
 
               <strong>Hasnan Amin</strong>
 
-              <ChevronDown size={18} />
+              <LogOut size={18} />
 
-            </div>
+            </button>
 
           </div>
 
         </header>
-
 
         {/* PAGE CONTENT */}
         <section className="page-content">
@@ -132,10 +140,8 @@ function Layout() {
   );
 }
 
-
 /* NAVIGATION ITEM */
 function NavItem({ to, icon, text }) {
-
   return (
     <NavLink
       to={to}
@@ -143,15 +149,10 @@ function NavItem({ to, icon, text }) {
         `nav-item ${isActive ? "active" : ""}`
       }
     >
-
       {icon}
-
       <span>{text}</span>
-
     </NavLink>
   );
-
 }
-
 
 export default Layout;

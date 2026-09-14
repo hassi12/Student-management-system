@@ -1,41 +1,102 @@
+import { useEffect, useState } from "react";
+
 function Dashboard() {
+  const [student, setStudent] = useState(null);
+  const [courses, setCourses] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+
+    Promise.all([
+      fetch("http://127.0.0.1:8000/api/students/me/", {
+        headers: {
+          Authorization: `Token ${token}`,
+        },
+      }).then((response) => response.json()),
+
+      fetch("http://127.0.0.1:8000/api/enrollments/my/", {
+        headers: {
+          Authorization: `Token ${token}`,
+        },
+      }).then((response) => response.json()),
+    ])
+      .then(([studentData, courseData]) => {
+        setStudent(studentData);
+        setCourses(courseData);
+        setLoading(false);
+      })
+      .catch((error) => {
+        console.error("Error loading dashboard:", error);
+        setLoading(false);
+      });
+  }, []);
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+
+    fetch("http://127.0.0.1:8000/api/students/me/", {
+      headers: {
+        Authorization: `Token ${token}`,
+      },
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        setStudent(data);
+        setLoading(false);
+      })
+      .catch((error) => {
+        console.error("Error loading student profile:", error);
+        setLoading(false);
+      });
+  }, []);
+
+  if (loading) {
+    return <p>Loading dashboard...</p>;
+  }
+
   return (
     <div className="dashboard">
 
       {/* PAGE TITLE */}
       <div className="dashboard-heading">
         <div>
-          <h1>Dashboard</h1>
-          <p>Here's what's happening with your studies.</p>
+          <h1>
+            Welcome, {student?.first_name || student?.username}
+          </h1>
+
+          <p>
+            Roll No: {student?.roll_number}
+          </p>
         </div>
       </div>
 
 
-      {/* STATISTICS */}
+      {/* STUDENT INFORMATION */}
       <section className="dashboard-stats">
 
         <DashboardCard
-          title="My Courses"
-          value="5"
-          subtitle="Active courses"
+  title="My Courses"
+  value={courses.length}
+  subtitle="Enrolled courses"
+/>
+
+        <DashboardCard
+          title="Batch"
+          value={student?.batch_name}
+          subtitle="Current batch"
         />
 
         <DashboardCard
-          title="Pending Assignments"
-          value="3"
-          subtitle="Need your attention"
+          title="Semester"
+          value={student?.semester_name}
+          subtitle="Current semester"
         />
 
         <DashboardCard
-          title="Attendance"
-          value="87%"
-          subtitle="Overall attendance"
-        />
-
-        <DashboardCard
-          title="Unread Messages"
-          value="4"
-          subtitle="New messages"
+          title="Section"
+          value={student?.class_section_name}
+          subtitle="Class section"
         />
 
       </section>
@@ -58,21 +119,29 @@ function Dashboard() {
             </button>
           </div>
 
+          {courses.map((course) => (
+  <Course
+    key={course.id}
+    name={course.course_name}
+    code={course.course_code}
+  />
+))}
 
-          <Course
-            name="Programming Fundamentals"
-            code="CS-101"
-          />
+          {courses.map((course) => (
+  <Course
+    key={course.id}
+    name={course.course_name}
+    code={course.course_code}
+  />
+))}
 
-          <Course
-            name="Introduction to Computing"
-            code="CS-102"
-          />
-
-          <Course
-            name="Database Systems"
-            code="CS-201"
-          />
+          {courses.map((course) => (
+  <Course
+    key={course.id}
+    name={course.course_name}
+    code={course.course_code}
+  />
+))}
 
         </div>
 
@@ -90,7 +159,6 @@ function Dashboard() {
               View All
             </button>
           </div>
-
 
           <Assignment
             title="Python Functions"
