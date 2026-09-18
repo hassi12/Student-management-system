@@ -11,6 +11,9 @@ import Books from "./pages/Books";
 import ResetPassword from "./pages/ResetPassword";
 import ForgotPassword from "./pages/ForgotPassword";
 import AssignmentDetail from "./pages/AssignmentDetail";
+import AssignmentSubmissions from "./pages/AssignmentSubmissions";
+import SubmissionDetail from "./pages/SubmissionDetail";
+
 
 function ProtectedRoute({ children }) {
   const token = localStorage.getItem("token");
@@ -39,6 +42,14 @@ function App() {
         path="/forgot-password"
         element={<ForgotPassword />}
       />
+      <Route
+  path="/assignments/:id/submissions"
+  element={<AssignmentSubmissions />}
+/>
+<Route
+  path="/assignments/:id/submissions/:submissionId"
+  element={<SubmissionDetail />}
+/>
 
       {/* Protected application */}
       <Route

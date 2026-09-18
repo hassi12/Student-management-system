@@ -19,3 +19,301 @@ body {
   background: #f5f6fa;
   color: #202124;
 }
+
+/* =========================================
+   TEACHER ASSIGNMENT SUBMISSIONS
+========================================= */
+
+.teacher-submissions-page {
+  min-height: 100vh;
+  padding: 30px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.teacher-submissions-back {
+  border: none;
+  background: transparent;
+  color: #666;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 0;
+  margin-bottom: 25px;
+}
+
+.teacher-submissions-back:hover {
+  color: #fe0000;
+}
+
+.teacher-submissions-header {
+  background: #ffffff;
+  border: 1px solid #e7e7e7;
+  border-radius: 18px;
+  padding: 28px 30px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.teacher-submissions-label {
+  color: #fe0000;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  margin-bottom: 8px;
+}
+
+.teacher-submissions-header h1 {
+  margin: 0;
+  color: #202124;
+  font-size: 28px;
+  line-height: 1.3;
+}
+
+.teacher-submissions-header p {
+  margin: 8px 0 0;
+  color: #777;
+  font-size: 14px;
+}
+
+.teacher-submission-count {
+  background: #fff1f1;
+  color: #fe0000;
+  border: 1px solid #ffd6d6;
+  padding: 10px 16px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.teacher-submissions-card {
+  margin-top: 20px;
+  background: #ffffff;
+  border: 1px solid #e7e7e7;
+  border-radius: 18px;
+  overflow: hidden;
+}
+
+.teacher-submissions-table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.teacher-submissions-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 850px;
+}
+
+.teacher-submissions-table th {
+  padding: 17px 20px;
+  background: #fafafa;
+  border-bottom: 1px solid #e7e7e7;
+  color: #777;
+  font-size: 12px;
+  font-weight: 700;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.teacher-submissions-table td {
+  padding: 18px 20px;
+  border-bottom: 1px solid #eeeeee;
+  color: #555;
+  font-size: 14px;
+  vertical-align: middle;
+}
+
+.teacher-submissions-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.teacher-submissions-table tbody tr:hover {
+  background: #fffafa;
+}
+
+.teacher-student-name {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+}
+
+.teacher-student-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #fff1f1;
+  color: #fe0000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.teacher-student-name strong {
+  color: #333;
+  font-size: 14px;
+}
+
+.submission-status {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.submission-status.submitted {
+  background: #fff4e5;
+  color: #b76e00;
+}
+
+.submission-status.graded {
+  background: #eaf8ef;
+  color: #20823a;
+}
+
+.view-submission-button {
+  padding: 8px 14px;
+  border: 1px solid #dddddd;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #444;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.view-submission-button:hover {
+  border-color: #fe0000;
+  color: #fe0000;
+  background: #fffafa;
+}
+
+.teacher-submissions-message {
+  margin-top: 20px;
+  background: #ffffff;
+  border: 1px solid #e7e7e7;
+  border-radius: 14px;
+  padding: 20px;
+  color: #666;
+}
+
+.teacher-submissions-empty {
+  margin-top: 20px;
+  background: #ffffff;
+  border: 1px solid #e7e7e7;
+  border-radius: 18px;
+  padding: 55px 30px;
+  text-align: center;
+}
+
+.teacher-submissions-empty h3 {
+  margin: 0 0 8px;
+  color: #333;
+}
+
+.teacher-submissions-empty p {
+  margin: 0;
+  color: #888;
+  font-size: 14px;
+}
+
+.teacher-submissions-loading {
+  background: #ffffff;
+  border: 1px solid #e7e7e7;
+  border-radius: 16px;
+  padding: 30px;
+  color: #777;
+  text-align: center;
+}
+
+@media (max-width: 700px) {
+  .teacher-submissions-page {
+    padding: 20px;
+  }
+
+  .teacher-submissions-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .teacher-submissions-header h1 {
+    font-size: 23px;
+  }
+}
+
+
+/* =========================================
+   STUDENT GRADE & FEEDBACK
+========================================= */
+
+.assignment-grade-card {
+  margin-top: 24px;
+}
+
+.student-grade-section {
+  display: flex;
+  gap: 20px;
+  margin-top: 24px;
+}
+
+.student-marks-box,
+.student-feedback-box {
+  background: #f8f9fb;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  padding: 20px;
+}
+
+.student-marks-box {
+  width: 220px;
+  flex-shrink: 0;
+}
+
+.student-marks-box span,
+.student-feedback-box span {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: #6b7280;
+  margin-bottom: 10px;
+}
+
+.student-marks-box strong {
+  display: block;
+  font-size: 26px;
+  font-weight: 700;
+  color: #fe0000;
+}
+
+.student-feedback-box {
+  flex: 1;
+}
+
+.student-feedback-box p {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.7;
+  color: #30343b;
+}
+
+/* Responsive */
+
+@media (max-width: 700px) {
+  .student-grade-section {
+    flex-direction: column;
+  }
+
+  .student-marks-box {
+    width: auto;
+  }
+}

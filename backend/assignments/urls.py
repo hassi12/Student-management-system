@@ -1,3 +1,4 @@
+
 from django.urls import path
 
 from .views import (
@@ -5,10 +6,20 @@ from .views import (
     AssignmentDetailView,
     SubmissionCreateView,
     MySubmissionView,
+    SubmitAssignmentView,
+    AssignmentSubmissionsView,
+    SubmissionDetailView,
+    GradeSubmissionView,
+
 )
 
+
 urlpatterns = [
-    path("", AssignmentListView.as_view(), name="assignment-list"),
+    path(
+        "",
+        AssignmentListView.as_view(),
+        name="assignment-list",
+    ),
 
     path(
         "<int:pk>/",
@@ -27,4 +38,28 @@ urlpatterns = [
         MySubmissionView.as_view(),
         name="my-submission",
     ),
+
+    path(
+        "<int:assignment_id>/submit/",
+        SubmitAssignmentView.as_view(),
+        name="submit-assignment",
+    ),
+
+    path(
+        "<int:assignment_id>/submissions/",
+        AssignmentSubmissionsView.as_view(),
+        name="assignment-submissions",
+    ),
+
+    path(
+    "<int:assignment_id>/submissions/<int:submission_id>/",
+    SubmissionDetailView.as_view(),
+    name="submission-detail",
+),
+path(
+    "<int:assignment_id>/submissions/<int:submission_id>/grade/",
+    GradeSubmissionView.as_view(),
+    name="grade-submission",
+),
+
 ]
