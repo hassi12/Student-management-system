@@ -1,24 +1,36 @@
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+
 function Assignments() {
-  const assignments = [
-    {
-      title: "Python Functions",
-      course: "CS-101 - Programming Fundamentals",
-      due: "Tomorrow",
-      status: "Pending",
-    },
-    {
-      title: "Database ER Diagram",
-      course: "CS-201 - Database Systems",
-      due: "Friday",
-      status: "Pending",
-    },
-    {
-      title: "Computer Basics",
-      course: "CS-102 - Introduction to Computing",
-      due: "Completed",
-      status: "Submitted",
-    },
-  ];
+  const [assignments, setAssignments] = useState([]);
+  const [message, setMessage] = useState("Loading assignments...");
+
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+
+    fetch("http://127.0.0.1:8000/api/assignments/", {
+      headers: {
+        Authorization: `Token ${token}`,
+      },
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Could not load assignments.");
+        }
+
+        return response.json();
+      })
+      .then((data) => {
+        setAssignments(data);
+        setMessage("");
+      })
+      .catch((error) => {
+        console.error(error);
+        setMessage("Could not load assignments.");
+      });
+  }, []);
 
   return (
     <div>
@@ -30,19 +42,26 @@ function Assignments() {
       </header>
 
       <div className="panel">
-        {assignments.map((assignment, index) => (
-          <div className="assignment" key={index}>
+        {message && <p>{message}</p>}
+
+        {assignments.map((assignment) => (
+          <div className="assignment" key={assignment.id}>
             <div>
               <strong>{assignment.title}</strong>
-              <span>{assignment.course}</span>
+              <span>Course ID: {assignment.course}</span>
             </div>
 
             <div>
-              <small>{assignment.due}</small>
-              <button>
-                {assignment.status === "Submitted"
-                  ? "View Submission"
-                  : "Open Assignment"}
+              <small>
+                Due: {new Date(assignment.due_date).toLocaleString()}
+              </small>
+
+              <button
+                onClick={() =>
+                  navigate(`/assignments/${assignment.id}`)
+                }
+              >
+                Open Assignment
               </button>
             </div>
           </div>
