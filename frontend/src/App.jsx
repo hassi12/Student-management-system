@@ -1,4 +1,6 @@
+
 import { Routes, Route, Navigate } from "react-router-dom";
+
 import Layout from "./components/Layout";
 
 import Login from "./pages/Login";
@@ -10,12 +12,14 @@ import Attendance from "./pages/Attendance";
 import Books from "./pages/Books";
 import ResetPassword from "./pages/ResetPassword";
 import ForgotPassword from "./pages/ForgotPassword";
+
 import AssignmentDetail from "./pages/AssignmentDetail";
 import AssignmentSubmissions from "./pages/AssignmentSubmissions";
 import SubmissionDetail from "./pages/SubmissionDetail";
 
 
 function ProtectedRoute({ children }) {
+
   const token = localStorage.getItem("token");
 
   if (!token) {
@@ -25,14 +29,45 @@ function ProtectedRoute({ children }) {
   return children;
 }
 
+
+/* DASHBOARD ROUTER */
+
+function RoleDashboard() {
+
+  const role = localStorage.getItem("role");
+
+  if (role === "teacher") {
+
+    return (
+      <div>
+        <h2>Teacher Dashboard</h2>
+
+        <p>
+          Welcome to the BSCS Portal Teacher Dashboard.
+        </p>
+      </div>
+    );
+
+  }
+
+  return <Dashboard />;
+}
+
+
 function App() {
+
   return (
+
     <Routes>
 
-      {/* Login page */}
-      <Route path="/login" element={<Login />} />
+      {/* LOGIN */}
+      <Route
+        path="/login"
+        element={<Login />}
+      />
 
-      {/* Password reset pages */}
+
+      {/* PASSWORD RESET */}
       <Route
         path="/reset-password/:uid/:token/"
         element={<ResetPassword />}
@@ -42,16 +77,31 @@ function App() {
         path="/forgot-password"
         element={<ForgotPassword />}
       />
-      <Route
-  path="/assignments/:id/submissions"
-  element={<AssignmentSubmissions />}
-/>
-<Route
-  path="/assignments/:id/submissions/:submissionId"
-  element={<SubmissionDetail />}
-/>
 
-      {/* Protected application */}
+
+      {/* TEACHER ASSIGNMENT PAGES */}
+
+      <Route
+        path="/assignments/:id/submissions"
+        element={
+          <ProtectedRoute>
+            <AssignmentSubmissions />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/assignments/:id/submissions/:submissionId"
+        element={
+          <ProtectedRoute>
+            <SubmissionDetail />
+          </ProtectedRoute>
+        }
+      />
+
+
+      {/* PROTECTED APPLICATION */}
+
       <Route
         element={
           <ProtectedRoute>
@@ -59,27 +109,65 @@ function App() {
           </ProtectedRoute>
         }
       >
-        <Route path="/" element={<Dashboard />} />
 
-        <Route path="/courses" element={<Courses />} />
+        {/* DASHBOARD */}
 
-        <Route path="/assignments" element={<Assignments />} />
+        <Route
+          path="/"
+          element={<RoleDashboard />}
+        />
 
-        {/* Assignment detail page */}
+
+        {/* COURSES */}
+
+        <Route
+          path="/courses"
+          element={<Courses />}
+        />
+
+
+        {/* ASSIGNMENTS */}
+
+        <Route
+          path="/assignments"
+          element={<Assignments />}
+        />
+
         <Route
           path="/assignments/:id"
           element={<AssignmentDetail />}
         />
 
-        <Route path="/quizzes" element={<Quizzes />} />
 
-        <Route path="/attendance" element={<Attendance />} />
+        {/* QUIZZES */}
 
-        <Route path="/books" element={<Books />} />
+        <Route
+          path="/quizzes"
+          element={<Quizzes />}
+        />
+
+
+        {/* ATTENDANCE */}
+
+        <Route
+          path="/attendance"
+          element={<Attendance />}
+        />
+
+
+        {/* BOOKS */}
+
+        <Route
+          path="/books"
+          element={<Books />}
+        />
+
       </Route>
 
     </Routes>
+
   );
 }
+
 
 export default App;

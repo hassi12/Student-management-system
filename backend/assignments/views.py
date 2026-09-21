@@ -8,6 +8,8 @@ from .models import Assignment, Submission
 from .serializers import AssignmentSerializer, SubmissionSerializer
 from rest_framework.exceptions import PermissionDenied
 from courses.models import CourseOffering
+from difflib import SequenceMatcher
+
 
 class AssignmentListView(generics.ListAPIView):
     queryset = Assignment.objects.all()
@@ -21,10 +23,56 @@ class AssignmentDetailView(generics.RetrieveAPIView):
     permission_classes = [IsAuthenticated]
 
 
+
 class SubmissionCreateView(generics.CreateAPIView):
+
     queryset = Submission.objects.all()
+
     serializer_class = SubmissionSerializer
+
     permission_classes = [IsAuthenticated]
+
+    def perform_create(self, serializer):
+
+        student = self.request.user.student_profile
+
+        assignment = serializer.validated_data["assignment"]
+
+        answer = serializer.validated_data.get(
+            "answer",
+            ""
+        )
+
+        # Check if the student already has a submission
+        existing_submission = Submission.objects.filter(
+            assignment=assignment,
+            student=student
+        ).first()
+
+        # Do not allow changes after submission
+        if existing_submission:
+
+            if existing_submission.status in [
+                "submitted",
+                "graded"
+            ]:
+                raise PermissionDenied(
+                    "This assignment has already been submitted "
+                    "and cannot be changed."
+                )
+
+        submission, created = Submission.objects.update_or_create(
+            assignment=assignment,
+            student=student,
+            defaults={
+                "answer": answer,
+                "status": "draft",
+                "submitted_at": None,
+            },
+        )
+
+        serializer.instance = submission
+
 
    
 def perform_create(self, serializer):
@@ -74,11 +122,100 @@ class SubmitAssignmentView(generics.UpdateAPIView):
             student=student
         )
 
+    
+    
     def update(self, request, *args, **kwargs):
-        submission = self.get_object()
 
+        student = self.request.user.student_profile
+
+        assignment_id = self.kwargs["assignment_id"]
+
+        # Get existing submission if the student saved a draft
+        submission = Submission.objects.filter(
+            assignment_id=assignment_id,
+            student=student
+        ).first()
+
+        # If no draft exists, create the submission directly
+        if not submission:
+
+            submission = Submission.objects.create(
+                assignment_id=assignment_id,
+                student=student,
+                answer=request.data.get("answer", "")
+            )
+
+        # Prevent changing an already submitted/graded assignment
+        if submission.status in ["submitted", "graded"]:
+
+            raise PermissionDenied(
+                "This assignment has already been submitted "
+                "and cannot be changed."
+            )
+
+        # Get the latest answer from the request
+        answer = request.data.get(
+            "answer",
+            submission.answer
+        )
+
+        submission.answer = answer
+
+        # Find other submitted answers for the same assignment
+        other_submissions = Submission.objects.filter(
+            assignment_id=assignment_id,
+            status__in=["submitted", "graded"]
+        ).exclude(
+            student=student
+        )
+
+        highest_similarity = 0
+        most_similar_student = None
+
+        # Compare this answer with other students
+        for other in other_submissions:
+
+            other_answer = other.answer.strip()
+
+            if not answer.strip() or not other_answer:
+                continue
+
+            similarity = SequenceMatcher(
+                None,
+                answer.strip().lower(),
+                other_answer.lower()
+            ).ratio() * 100
+
+            if similarity > highest_similarity:
+
+                highest_similarity = similarity
+
+                most_similar_student = (
+                    other.student.roll_number
+                )
+
+        # Store similarity result
+        if most_similar_student:
+
+            submission.similarity_score = round(
+                highest_similarity,
+                2
+            )
+
+            submission.similarity_with = (
+                most_similar_student
+            )
+
+        else:
+
+            submission.similarity_score = 0
+            submission.similarity_with = None
+
+        # Submit the assignment
         submission.status = "submitted"
+
         submission.submitted_at = timezone.now()
+
         submission.save()
 
         serializer = self.get_serializer(submission)
@@ -86,19 +223,37 @@ class SubmitAssignmentView(generics.UpdateAPIView):
         return Response(serializer.data)
 
 
+
+
+
 class MySubmissionView(generics.RetrieveAPIView):
+
     serializer_class = SubmissionSerializer
+
     permission_classes = [IsAuthenticated]
 
     def get_object(self):
+
         assignment_id = self.kwargs["assignment_id"]
 
         student = self.request.user.student_profile
 
-        return Submission.objects.get(
-            assignment_id=assignment_id,
-            student=student
-        )
+        try:
+
+            return Submission.objects.get(
+                assignment_id=assignment_id,
+                student=student
+            )
+
+        except Submission.DoesNotExist:
+
+            from rest_framework.exceptions import NotFound
+
+            raise NotFound(
+                "You have not started this assignment yet."
+            )
+
+
 
 
 

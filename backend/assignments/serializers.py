@@ -39,6 +39,8 @@ class SubmissionSerializer(serializers.ModelSerializer):
             "status",
             "marks",
             "feedback",
+            "similarity_score",
+            "similarity_with",
         ]
 
         read_only_fields = [
@@ -47,6 +49,8 @@ class SubmissionSerializer(serializers.ModelSerializer):
             "student_roll_number",
             "submitted_at",
             "status",
+            "similarity_score",
+            "similarity_with",
         ]
 
     def validate_marks(self, value):

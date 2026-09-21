@@ -66,6 +66,8 @@ class Submission(models.Model):
     feedback = models.TextField(
         blank=True
     )
+    similarity_score = models.FloatField( null=True, blank=True )
+    similarity_with = models.CharField( max_length=100, blank=True, null=True )
 
     def __str__(self):
         return f"{self.student.roll_number} - {self.assignment.title}"

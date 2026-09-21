@@ -8,6 +8,9 @@ function Assignments() {
 
   const navigate = useNavigate();
 
+  const role = localStorage.getItem("role");
+  const isTeacher = role === "teacher";
+
   useEffect(() => {
     const token = localStorage.getItem("token");
 
@@ -50,9 +53,14 @@ function Assignments() {
       {/* Header */}
       <header className="topbar">
         <div>
-          <h1>Assignments</h1>
+          <h1>
+            {isTeacher ? "Manage Assignments" : "Assignments"}
+          </h1>
+
           <p>
-            View your assignments, submit your answers, and track your work.
+            {isTeacher
+              ? "View assignments and review student submissions."
+              : "View your assignments, submit your answers, and track your work."}
           </p>
         </div>
       </header>
@@ -62,17 +70,30 @@ function Assignments() {
 
         {/* Page heading */}
         <div className="assignments-heading">
+
           <div>
-            <h2>My Assignments</h2>
+
+            <h2>
+              {isTeacher
+                ? "All Assignments"
+                : "My Assignments"}
+            </h2>
+
             <p>
-              Complete and submit your assignments before the due date.
+              {isTeacher
+                ? "Select an assignment to view student submissions."
+                : "Complete and submit your assignments before the due date."}
             </p>
+
           </div>
 
           <div className="assignment-count">
             {assignments.length}{" "}
-            {assignments.length === 1 ? "Assignment" : "Assignments"}
+            {assignments.length === 1
+              ? "Assignment"
+              : "Assignments"}
           </div>
+
         </div>
 
         {/* Loading / error */}
@@ -85,16 +106,23 @@ function Assignments() {
         {/* Empty state */}
         {!message && assignments.length === 0 && (
           <div className="assignment-empty">
+
             <h3>No Assignments Yet</h3>
+
             <p>
-              Your teachers have not posted any assignments yet.
+              {isTeacher
+                ? "No assignments have been created yet."
+                : "Your teachers have not posted any assignments yet."}
             </p>
+
           </div>
         )}
 
         {/* Assignment cards */}
         <div className="assignment-grid">
+
           {assignments.map((assignment) => {
+
             const status = getStatus(assignment);
 
             return (
@@ -140,6 +168,7 @@ function Assignments() {
 
                   <div>
                     <span>Due Date</span>
+
                     <strong>
                       {new Date(
                         assignment.due_date
@@ -149,6 +178,7 @@ function Assignments() {
 
                   <div>
                     <span>Maximum Marks</span>
+
                     <strong>
                       {assignment.max_marks}
                     </strong>
@@ -156,25 +186,46 @@ function Assignments() {
 
                 </div>
 
-                {/* Button */}
-                <button
-                  className="assignment-open-button"
-                  onClick={() =>
-                    navigate(
-                      `/assignments/${assignment.id}`
-                    )
-                  }
-                >
-                  Open Assignment
-                  <span>→</span>
-                </button>
+                {/* Teacher button */}
+                {isTeacher ? (
+
+                  <button
+                    className="assignment-open-button"
+                    onClick={() =>
+                      navigate(
+                        `/assignments/${assignment.id}/submissions`
+                      )
+                    }
+                  >
+                    View Submissions
+                    <span>→</span>
+                  </button>
+
+                ) : (
+
+                  /* Student button */
+                  <button
+                    className="assignment-open-button"
+                    onClick={() =>
+                      navigate(
+                        `/assignments/${assignment.id}`
+                      )
+                    }
+                  >
+                    Open Assignment
+                    <span>→</span>
+                  </button>
+
+                )}
 
               </div>
             );
           })}
+
         </div>
 
       </div>
+
     </div>
   );
 }

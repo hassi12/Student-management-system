@@ -1,3 +1,4 @@
+
 import {
   LayoutDashboard,
   BookOpen,
@@ -7,7 +8,6 @@ import {
   Bell,
   Mail,
   MessageSquare,
-  ChevronDown,
   LogOut,
 } from "lucide-react";
 
@@ -15,6 +15,11 @@ import { NavLink, Outlet, useNavigate } from "react-router-dom";
 
 function Layout() {
   const navigate = useNavigate();
+
+  const role = localStorage.getItem("role");
+  const username = localStorage.getItem("username");
+
+  const isTeacher = role === "teacher";
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -40,36 +45,42 @@ function Layout() {
         {/* NAVIGATION */}
         <nav className="sidebar-nav">
 
+          {/* DASHBOARD */}
           <NavItem
             to="/"
             icon={<LayoutDashboard />}
             text="Dashboard"
           />
 
+          {/* COURSES */}
           <NavItem
             to="/courses"
             icon={<BookOpen />}
-            text="My Courses"
+            text={isTeacher ? "My Courses" : "My Courses"}
           />
 
+          {/* ASSIGNMENTS */}
           <NavItem
             to="/assignments"
             icon={<ClipboardList />}
-            text="Assignments"
+            text={isTeacher ? "Manage Assignments" : "Assignments"}
           />
 
+          {/* QUIZZES */}
           <NavItem
             to="/quizzes"
             icon={<FileQuestion />}
-            text="Quizzes"
+            text={isTeacher ? "Manage Quizzes" : "Quizzes"}
           />
 
+          {/* ATTENDANCE */}
           <NavItem
             to="/attendance"
             icon={<MapPin />}
-            text="Attendance"
+            text={isTeacher ? "Manage Attendance" : "Attendance"}
           />
 
+          {/* BOOKS */}
           <NavItem
             to="/books"
             icon={<BookOpen />}
@@ -87,23 +98,32 @@ function Layout() {
         <header className="top-header">
 
           <div className="welcome">
-            <h1>Welcome, Hasnan Amin</h1>
+
+            <h1>
+              Welcome, {username || "User"}
+            </h1>
 
             <p>
-              Email: hasnan@bscsportal.edu.pk
+              {isTeacher
+                ? "Teacher Portal"
+                : "Student Portal"}
             </p>
+
           </div>
 
           <div className="header-right">
 
+            {/* MAIL */}
             <button className="header-icon">
               <Mail />
             </button>
 
+            {/* MESSAGES */}
             <button className="header-icon">
               <MessageSquare />
             </button>
 
+            {/* NOTIFICATIONS */}
             <button className="header-icon notification">
               <Bell />
               <span>3</span>
@@ -115,11 +135,14 @@ function Layout() {
               onClick={handleLogout}
               title="Logout"
             >
+
               <div className="profile-circle">
-                H
+                {(username || "U").charAt(0).toUpperCase()}
               </div>
 
-              <strong>Hasnan Amin</strong>
+              <strong>
+                {username || "User"}
+              </strong>
 
               <LogOut size={18} />
 
@@ -140,8 +163,10 @@ function Layout() {
   );
 }
 
+
 /* NAVIGATION ITEM */
 function NavItem({ to, icon, text }) {
+
   return (
     <NavLink
       to={to}
@@ -149,10 +174,14 @@ function NavItem({ to, icon, text }) {
         `nav-item ${isActive ? "active" : ""}`
       }
     >
+
       {icon}
+
       <span>{text}</span>
+
     </NavLink>
   );
 }
+
 
 export default Layout;

@@ -126,9 +126,20 @@ function SubmissionDetail() {
     );
   }
 
+  const similarityScore =
+    submission.similarity_score !== null &&
+    submission.similarity_score !== undefined
+      ? Number(submission.similarity_score)
+      : 0;
+
+  const hasSimilarity =
+    submission.similarity_with &&
+    similarityScore > 0;
+
   return (
     <div className="submission-detail-page">
 
+      {/* BACK BUTTON */}
       <button
         className="submission-detail-back"
         onClick={() =>
@@ -138,6 +149,8 @@ function SubmissionDetail() {
         ← Back to Submissions
       </button>
 
+
+      {/* HEADER */}
       <div className="submission-detail-header">
 
         <div>
@@ -169,6 +182,8 @@ function SubmissionDetail() {
 
       </div>
 
+
+      {/* META */}
       <div className="submission-detail-meta">
 
         <div>
@@ -200,6 +215,8 @@ function SubmissionDetail() {
 
       </div>
 
+
+      {/* STUDENT ANSWER */}
       <div className="submission-answer-card">
 
         <div className="submission-card-heading">
@@ -232,12 +249,101 @@ function SubmissionDetail() {
 
       </div>
 
+
+      {/* SIMILARITY CHECK */}
       <div className="grading-card">
 
         <div className="submission-card-heading">
 
           <div className="submission-heading-number">
             02
+          </div>
+
+          <div>
+            <h2>Similarity Check</h2>
+
+            <p>
+              Comparison with other students' submitted answers.
+            </p>
+          </div>
+
+        </div>
+
+        {hasSimilarity ? (
+
+          <div style={{ marginTop: "20px" }}>
+
+            <div>
+              <strong>
+                Similarity Score
+              </strong>
+
+              <div
+                style={{
+                  fontSize: "32px",
+                  fontWeight: "700",
+                  marginTop: "8px"
+                }}
+              >
+                {similarityScore.toFixed(2)}%
+              </div>
+            </div>
+
+            <div style={{ marginTop: "15px" }}>
+
+              <strong>
+                Most Similar Student
+              </strong>
+
+              <p>
+                Roll Number:{" "}
+                {submission.similarity_with}
+              </p>
+
+            </div>
+
+            <div
+              style={{
+                marginTop: "15px",
+                padding: "12px",
+                borderRadius: "8px",
+                background: "#fff3cd",
+                color: "#856404"
+              }}
+            >
+              ⚠️ Similarity detected. Please review
+              the two answers before making a decision.
+            </div>
+
+          </div>
+
+        ) : (
+
+          <div
+            style={{
+              marginTop: "20px",
+              padding: "12px",
+              borderRadius: "8px",
+              background: "#e8f5e9",
+              color: "#2e7d32"
+            }}
+          >
+            ✓ No significant similarity detected
+            with another submitted answer.
+          </div>
+
+        )}
+
+      </div>
+
+
+      {/* GRADING */}
+      <div className="grading-card">
+
+        <div className="submission-card-heading">
+
+          <div className="submission-heading-number">
+            03
           </div>
 
           <div>
@@ -308,6 +414,8 @@ function SubmissionDetail() {
 
       </div>
 
+
+      {/* MESSAGE */}
       {message &&
         message !== "Loading submission..." && (
           <div className="submission-action-message">

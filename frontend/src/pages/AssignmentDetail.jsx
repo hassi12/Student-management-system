@@ -15,6 +15,9 @@ function AssignmentDetail() {
   const [marks, setMarks] = useState(null);
   const [feedback, setFeedback] = useState("");
 
+  // Store the complete submission
+  const [submission, setSubmission] = useState(null);
+
   useEffect(() => {
     const token = localStorage.getItem("token");
 
@@ -62,6 +65,8 @@ function AssignmentDetail() {
       })
       .then((data) => {
         if (data) {
+          setSubmission(data);
+
           setAnswer(data.answer || "");
 
           setMarks(
@@ -97,10 +102,12 @@ function AssignmentDetail() {
         "http://127.0.0.1:8000/api/assignments/submit/",
         {
           method: "POST",
+
           headers: {
             "Content-Type": "application/json",
             Authorization: `Token ${token}`,
           },
+
           body: JSON.stringify({
             assignment: assignment.id,
             answer: answer,
@@ -114,10 +121,13 @@ function AssignmentDetail() {
         throw new Error(JSON.stringify(data));
       }
 
+      setSubmission(data);
       setMessage("Draft saved successfully.");
+
     } catch (error) {
       console.error(error);
       setMessage(error.message);
+
     } finally {
       setSaving(false);
     }
@@ -127,6 +137,11 @@ function AssignmentDetail() {
   const submitAssignment = async () => {
     const token = localStorage.getItem("token");
 
+    if (!answer.trim()) {
+      setMessage("Please write your answer before submitting.");
+      return;
+    }
+
     setSaving(true);
     setMessage("Submitting assignment...");
 
@@ -135,9 +150,15 @@ function AssignmentDetail() {
         `http://127.0.0.1:8000/api/assignments/${id}/submit/`,
         {
           method: "PUT",
+
           headers: {
+            "Content-Type": "application/json",
             Authorization: `Token ${token}`,
           },
+
+          body: JSON.stringify({
+            answer: answer,
+          }),
         }
       );
 
@@ -147,11 +168,27 @@ function AssignmentDetail() {
         throw new Error(JSON.stringify(data));
       }
 
+      // Store complete submission including similarity result
+      setSubmission(data);
+
       setSubmitted(true);
+
+      setAnswer(data.answer || answer);
+
+      setMarks(
+        data.marks !== null && data.marks !== undefined
+          ? data.marks
+          : null
+      );
+
+      setFeedback(data.feedback || "");
+
       setMessage("Assignment submitted successfully.");
+
     } catch (error) {
       console.error(error);
       setMessage(error.message);
+
     } finally {
       setSaving(false);
     }
@@ -177,6 +214,12 @@ function AssignmentDetail() {
     );
   }
 
+  const similarityScore =
+    submission?.similarity_score !== null &&
+    submission?.similarity_score !== undefined
+      ? Number(submission.similarity_score)
+      : null;
+
   return (
     <div className="assignment-detail-page">
 
@@ -188,10 +231,12 @@ function AssignmentDetail() {
         ← Back to Assignments
       </button>
 
+
       {/* Assignment header */}
       <div className="assignment-detail-header">
 
         <div>
+
           <div className="assignment-detail-label">
             ASSIGNMENT
           </div>
@@ -202,6 +247,7 @@ function AssignmentDetail() {
             Complete the assignment and submit your answer
             before the due date.
           </p>
+
         </div>
 
         <div
@@ -216,10 +262,12 @@ function AssignmentDetail() {
 
       </div>
 
+
       {/* Assignment information */}
       <div className="assignment-meta">
 
         <div className="assignment-meta-item">
+
           <span>Due Date</span>
 
           <strong>
@@ -227,36 +275,51 @@ function AssignmentDetail() {
               assignment.due_date
             ).toLocaleString()}
           </strong>
+
         </div>
 
         <div className="assignment-meta-item">
+
           <span>Maximum Marks</span>
 
           <strong>
             {assignment.max_marks}
           </strong>
+
         </div>
 
         <div className="assignment-meta-item">
+
           <span>Course</span>
 
           <strong>
             Course {assignment.course}
           </strong>
+
         </div>
 
       </div>
+
 
       {/* Question */}
       <div className="assignment-detail-card">
 
         <div className="detail-card-heading">
-          <span className="detail-number">01</span>
+
+          <span className="detail-number">
+            01
+          </span>
 
           <div>
+
             <h2>Assignment Question</h2>
-            <p>Read the question carefully before answering.</p>
+
+            <p>
+              Read the question carefully before answering.
+            </p>
+
           </div>
+
         </div>
 
         <div className="assignment-question">
@@ -265,25 +328,39 @@ function AssignmentDetail() {
 
       </div>
 
+
       {/* Answer */}
       <div className="assignment-detail-card">
 
         <div className="detail-card-heading">
-          <span className="detail-number">02</span>
+
+          <span className="detail-number">
+            02
+          </span>
 
           <div>
+
             <h2>Your Answer</h2>
 
             <p>
               Write your answer directly in the portal.
             </p>
+
           </div>
+
         </div>
 
         <textarea
           className="assignment-answer-box"
           value={answer}
-          onChange={(e) => setAnswer(e.target.value)}
+          onChange={(e) =>
+            setAnswer(e.target.value)
+          }
+          onCopy={(e) => e.preventDefault()}
+          onCut={(e) => e.preventDefault()}
+          onPaste={(e) => e.preventDefault()}
+          onContextMenu={(e) => e.preventDefault()}
+          onDrop={(e) => e.preventDefault()}
           placeholder="Write your answer here..."
           disabled={submitted}
         />
@@ -304,42 +381,84 @@ function AssignmentDetail() {
 
       </div>
 
-      {/* Teacher Grade & Feedback */}
+
+      {/* Similarity Check */}
       {submitted && (
-        <div className="assignment-detail-card assignment-grade-card">
+        <div className="assignment-detail-card">
 
           <div className="detail-card-heading">
-            <span className="detail-number">03</span>
+
+            <span className="detail-number">
+              03
+            </span>
 
             <div>
-              <h2>Grade & Feedback</h2>
+
+              <h2>Similarity Check</h2>
 
               <p>
-                Your teacher's evaluation of this assignment.
+                Your answer was checked against other
+                submitted answers.
               </p>
+
             </div>
+
           </div>
 
           <div className="student-grade-section">
 
             <div className="student-marks-box">
-              <span>Marks Obtained</span>
+
+              <span>
+                Similarity Score
+              </span>
 
               <strong>
-                {marks !== null
-                  ? `${marks} / ${assignment.max_marks}`
-                  : "Not graded yet"}
+                {similarityScore !== null
+                  ? `${similarityScore.toFixed(2)}%`
+                  : "Not available"}
               </strong>
+
             </div>
 
             <div className="student-feedback-box">
-              <span>Teacher Feedback</span>
 
-              <p>
-                {feedback
-                  ? feedback
-                  : "No feedback has been provided yet."}
-              </p>
+              <span>
+                Status
+              </span>
+
+              {similarityScore === null ? (
+
+                <p>
+                  Similarity result is not available yet.
+                </p>
+
+              ) : similarityScore < 20 ? (
+
+                <p>
+                  🟢 Low similarity — no significant match detected.
+                </p>
+
+              ) : similarityScore < 50 ? (
+
+                <p>
+                  🟡 Moderate similarity — some matching content was found.
+                </p>
+
+              ) : similarityScore < 80 ? (
+
+                <p>
+                  🟠 High similarity — your answer contains significant matching content.
+                </p>
+
+              ) : (
+
+                <p>
+                  🔴 Very high similarity — significant matching content was found.
+                </p>
+
+              )}
+
             </div>
 
           </div>
@@ -347,17 +466,79 @@ function AssignmentDetail() {
         </div>
       )}
 
+
+      {/* Teacher Grade & Feedback */}
+      {submitted && (
+        <div className="assignment-detail-card assignment-grade-card">
+
+          <div className="detail-card-heading">
+
+            <span className="detail-number">
+              04
+            </span>
+
+            <div>
+
+              <h2>Grade & Feedback</h2>
+
+              <p>
+                Your teacher's evaluation of this assignment.
+              </p>
+
+            </div>
+
+          </div>
+
+          <div className="student-grade-section">
+
+            <div className="student-marks-box">
+
+              <span>
+                Marks Obtained
+              </span>
+
+              <strong>
+                {marks !== null
+                  ? `${marks} / ${assignment.max_marks}`
+                  : "Not graded yet"}
+              </strong>
+
+            </div>
+
+            <div className="student-feedback-box">
+
+              <span>
+                Teacher Feedback
+              </span>
+
+              <p>
+                {feedback
+                  ? feedback
+                  : "No feedback has been provided yet."}
+              </p>
+
+            </div>
+
+          </div>
+
+        </div>
+      )}
+
+
       {/* Actions */}
       <div className="assignment-actions">
 
         {!submitted && (
           <>
+
             <button
               className="save-draft-button"
               onClick={saveDraft}
               disabled={saving}
             >
-              {saving ? "Saving..." : "Save Draft"}
+              {saving
+                ? "Saving..."
+                : "Save Draft"}
             </button>
 
             <button
@@ -369,24 +550,34 @@ function AssignmentDetail() {
                 ? "Submitting..."
                 : "Submit Assignment"}
             </button>
+
           </>
         )}
 
         {submitted && (
           <div className="submission-success">
-            <div className="success-icon">✓</div>
+
+            <div className="success-icon">
+              ✓
+            </div>
 
             <div>
-              <strong>Assignment Submitted</strong>
+
+              <strong>
+                Assignment Submitted
+              </strong>
 
               <p>
                 Your answer has been successfully submitted.
               </p>
+
             </div>
+
           </div>
         )}
 
       </div>
+
 
       {/* Message */}
       {message &&
