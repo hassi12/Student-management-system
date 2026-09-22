@@ -66,12 +66,14 @@ function Layout() {
             text={isTeacher ? "Manage Assignments" : "Assignments"}
           />
 
-          {/* QUIZZES */}
-          <NavItem
-            to="/quizzes"
-            icon={<FileQuestion />}
-            text={isTeacher ? "Manage Quizzes" : "Quizzes"}
-          />
+{/* QUIZZES */}
+
+<NavItem
+  to={isTeacher ? "/teacher/quizzes" : "/quizzes"}
+  icon={<FileQuestion />}
+  text={isTeacher ? "Manage Quizzes" : "Quizzes"}
+/>
+
 
           {/* ATTENDANCE */}
           <NavItem

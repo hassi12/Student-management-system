@@ -1,3 +1,4 @@
+
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
@@ -19,8 +20,9 @@ class User(AbstractUser):
     def __str__(self):
         return self.username
 
-    
+
 class StudentProfile(models.Model):
+
     user = models.OneToOneField(
         User,
         on_delete=models.CASCADE,
@@ -46,13 +48,17 @@ class StudentProfile(models.Model):
         "students.Semester",
         on_delete=models.PROTECT
     )
+
     class_section = models.ForeignKey(
-    "students.ClassSection",
-    on_delete=models.PROTECT,
-    null=True,
-    blank=True,
-    related_name="students"
+        "students.ClassSection",
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="students"
     )
 
     def __str__(self):
-        return f"{self.roll_number} - {self.user.get_full_name()}"
+        return (
+            f"{self.roll_number} - "
+            f"{self.user.get_full_name()}"
+        )

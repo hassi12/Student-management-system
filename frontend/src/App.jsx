@@ -16,6 +16,8 @@ import ForgotPassword from "./pages/ForgotPassword";
 import AssignmentDetail from "./pages/AssignmentDetail";
 import AssignmentSubmissions from "./pages/AssignmentSubmissions";
 import SubmissionDetail from "./pages/SubmissionDetail";
+import QuizAttempt from "./pages/QuizAttempt";
+import TeacherQuizzes from "./pages/TeacherQuizzes";
 
 
 function ProtectedRoute({ children }) {
@@ -61,6 +63,7 @@ function App() {
     <Routes>
 
       {/* LOGIN */}
+
       <Route
         path="/login"
         element={<Login />}
@@ -68,6 +71,7 @@ function App() {
 
 
       {/* PASSWORD RESET */}
+
       <Route
         path="/reset-password/:uid/:token/"
         element={<ResetPassword />}
@@ -144,6 +148,19 @@ function App() {
         <Route
           path="/quizzes"
           element={<Quizzes />}
+        />
+
+        <Route
+          path="/quizzes/:id"
+          element={<QuizAttempt />}
+        />
+
+
+        {/* TEACHER QUIZZES */}
+
+        <Route
+          path="/teacher/quizzes"
+          element={<TeacherQuizzes />}
         />
 
 

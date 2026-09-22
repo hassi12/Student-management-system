@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 
 function Dashboard() {
@@ -32,144 +33,228 @@ function Dashboard() {
       });
   }, []);
 
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-
-    fetch("http://127.0.0.1:8000/api/students/me/", {
-      headers: {
-        Authorization: `Token ${token}`,
-      },
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        setStudent(data);
-        setLoading(false);
-      })
-      .catch((error) => {
-        console.error("Error loading student profile:", error);
-        setLoading(false);
-      });
-  }, []);
-
   if (loading) {
-    return <p>Loading dashboard...</p>;
+    return (
+      <div className="dashboard">
+        <p>Loading dashboard...</p>
+      </div>
+    );
   }
 
   return (
     <div className="dashboard">
 
-      {/* PAGE TITLE */}
+      {/* =========================
+          WELCOME HEADER
+      ========================= */}
+
       <div className="dashboard-heading">
+
         <div>
           <h1>
-            Welcome, {student?.first_name || student?.username}
+            Welcome back,{" "}
+            {student?.first_name || student?.username}
           </h1>
 
           <p>
-            Roll No: {student?.roll_number}
+            Here's an overview of your academic activities.
           </p>
         </div>
+
+        <div className="student-badge">
+          <strong>{student?.roll_number}</strong>
+          <span>Student</span>
+        </div>
+
       </div>
 
 
-      {/* STUDENT INFORMATION */}
+      {/* =========================
+          STAT CARDS
+      ========================= */}
+
       <section className="dashboard-stats">
 
         <DashboardCard
-  title="My Courses"
-  value={courses.length}
-  subtitle="Enrolled courses"
-/>
+          title="My Courses"
+          value={courses.length}
+          subtitle="Enrolled courses"
+        />
 
         <DashboardCard
           title="Batch"
-          value={student?.batch_name}
+          value={student?.batch_name || "-"}
           subtitle="Current batch"
         />
 
         <DashboardCard
           title="Semester"
-          value={student?.semester_name}
+          value={student?.semester_name || "-"}
           subtitle="Current semester"
         />
 
         <DashboardCard
           title="Section"
-          value={student?.class_section_name}
+          value={student?.class_section_name || "-"}
           subtitle="Class section"
         />
 
       </section>
 
 
-      {/* MAIN DASHBOARD CONTENT */}
+      {/* =========================
+          MAIN CONTENT
+      ========================= */}
+
       <section className="dashboard-grid">
 
-        {/* COURSES */}
+        {/* =========================
+            COURSES
+        ========================= */}
+
         <div className="dashboard-panel">
 
           <div className="panel-header">
+
             <div>
               <h2>My Courses</h2>
-              <p>Your current courses</p>
+
+              <p>
+                Your current enrolled courses
+              </p>
             </div>
 
-            <button className="view-all">
+            <button
+              className="view-all"
+              onClick={() => {
+                window.location.href = "/courses";
+              }}
+            >
               View All
             </button>
+
           </div>
 
-          {courses.map((course) => (
-  <Course
-    key={course.id}
-    name={course.course_name}
-    code={course.course_code}
-  />
-))}
 
-          {courses.map((course) => (
-  <Course
-    key={course.id}
-    name={course.course_name}
-    code={course.course_code}
-  />
-))}
+          {courses.length > 0 ? (
 
-          {courses.map((course) => (
-  <Course
-    key={course.id}
-    name={course.course_name}
-    code={course.course_code}
-  />
-))}
+            courses.map((course) => (
+
+              <Course
+                key={course.id}
+                name={course.course_name}
+                code={course.course_code}
+              />
+
+            ))
+
+          ) : (
+
+            <div className="empty-dashboard">
+              No courses found.
+            </div>
+
+          )}
 
         </div>
 
 
-        {/* ASSIGNMENTS */}
+        {/* =========================
+            QUICK ACCESS
+        ========================= */}
+
         <div className="dashboard-panel">
 
           <div className="panel-header">
+
             <div>
-              <h2>Upcoming Assignments</h2>
-              <p>Assignments that need attention</p>
+              <h2>Quick Access</h2>
+
+              <p>
+                Frequently used sections
+              </p>
             </div>
 
-            <button className="view-all">
-              View All
-            </button>
           </div>
 
-          <Assignment
-            title="Python Functions"
-            course="Programming Fundamentals"
-            due="Tomorrow"
+
+          <QuickLink
+            title="Assignments"
+            description="View and submit assignments"
+            path="/assignments"
           />
 
-          <Assignment
-            title="Database ER Diagram"
-            course="Database Systems"
-            due="Friday"
+          <QuickLink
+            title="Quizzes"
+            description="Take your available quizzes"
+            path="/quizzes"
+          />
+
+          <QuickLink
+            title="Attendance"
+            description="Check your attendance"
+            path="/attendance"
+          />
+
+          <QuickLink
+            title="Books"
+            description="Access course books"
+            path="/books"
+          />
+
+        </div>
+
+      </section>
+
+
+      {/* =========================
+          ACADEMIC INFORMATION
+      ========================= */}
+
+      <section className="dashboard-panel dashboard-information">
+
+        <div className="panel-header">
+
+          <div>
+            <h2>Student Information</h2>
+
+            <p>
+              Your current academic information
+            </p>
+          </div>
+
+        </div>
+
+
+        <div className="student-information-grid">
+
+          <InfoItem
+            label="Name"
+            value={
+              student?.first_name ||
+              student?.username ||
+              "-"
+            }
+          />
+
+          <InfoItem
+            label="Roll Number"
+            value={student?.roll_number || "-"}
+          />
+
+          <InfoItem
+            label="Batch"
+            value={student?.batch_name || "-"}
+          />
+
+          <InfoItem
+            label="Semester"
+            value={student?.semester_name || "-"}
+          />
+
+          <InfoItem
+            label="Section"
+            value={student?.class_section_name || "-"}
           />
 
         </div>
@@ -186,6 +271,7 @@ function Dashboard() {
 ========================= */
 
 function DashboardCard({ title, value, subtitle }) {
+
   return (
     <div className="dashboard-stat-card">
 
@@ -205,18 +291,24 @@ function DashboardCard({ title, value, subtitle }) {
 ========================= */
 
 function Course({ name, code }) {
+
   return (
     <div className="dashboard-course">
 
       <div className="course-info">
 
-        <strong>{name}</strong>
+        <strong>{name || "Course"}</strong>
 
-        <span>{code}</span>
+        <span>{code || "No course code"}</span>
 
       </div>
 
-      <button className="course-button">
+      <button
+        className="course-button"
+        onClick={() => {
+          window.location.href = "/courses";
+        }}
+      >
         Open
       </button>
 
@@ -226,24 +318,48 @@ function Course({ name, code }) {
 
 
 /* =========================
-   ASSIGNMENT
+   QUICK LINK
 ========================= */
 
-function Assignment({ title, course, due }) {
-  return (
-    <div className="dashboard-assignment">
+function QuickLink({ title, description, path }) {
 
-      <div className="assignment-info">
+  return (
+    <div
+      className="dashboard-quick-link"
+      onClick={() => {
+        window.location.href = path;
+      }}
+    >
+
+      <div>
 
         <strong>{title}</strong>
 
-        <span>{course}</span>
+        <span>{description}</span>
 
       </div>
 
-      <div className="assignment-due">
-        {due}
-      </div>
+      <span className="quick-arrow">
+        →
+      </span>
+
+    </div>
+  );
+}
+
+
+/* =========================
+   INFORMATION ITEM
+========================= */
+
+function InfoItem({ label, value }) {
+
+  return (
+    <div className="student-info-item">
+
+      <span>{label}</span>
+
+      <strong>{value}</strong>
 
     </div>
   );
