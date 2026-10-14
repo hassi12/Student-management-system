@@ -6,3 +6,10 @@ __pycache__/
 db.sqlite3
 backend/attendance/face_data/
 .env
+venv/
+.venv/
+__pycache__/
+*.py[cod]
+.env
+db.sqlite3
+node_modules/
